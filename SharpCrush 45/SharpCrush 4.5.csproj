@@ -7,8 +7,8 @@
     <ProjectGuid>{292E9930-C9BF-4BFE-B5C5-FDE8F5AE79F3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SharpCrush</RootNamespace>
-    <AssemblyName>SharpCrush</AssemblyName>
+    <RootNamespace>SharpCrush45</RootNamespace>
+    <AssemblyName>SharpCrush45</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -35,6 +35,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />

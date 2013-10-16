@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using SharpCrush.Results;
+using SharpCrush45.Results;
 
-namespace SharpCrush
+namespace SharpCrush45
 {
     /// <summary>
     /// MediaCrush API Wrapper

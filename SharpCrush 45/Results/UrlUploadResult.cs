@@ -1,4 +1,4 @@
-﻿namespace SharpCrush.Results
+﻿namespace SharpCrush45.Results
 {
     /// <summary>
     /// Result codes from the <see cref="SharpCrush.UploadUrl(string)"/> routine.

@@ -7,8 +7,8 @@
     <ProjectGuid>{D6D257A6-6E3B-4B24-9D02-FB0FECBD8245}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SharpCrush</RootNamespace>
-    <AssemblyName>SharpCrush</AssemblyName>
+    <RootNamespace>SharpCrush4</RootNamespace>
+    <AssemblyName>SharpCrush4</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -53,6 +53,8 @@
     <Compile Include="Results\FileUploadResult.cs" />
     <Compile Include="Results\GetFileResult.cs" />
     <Compile Include="Results\UrlUploadResult.cs" />
+    <Compile Include="SharpCrushFile.cs" />
+    <Compile Include="SharpCrushMediaFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

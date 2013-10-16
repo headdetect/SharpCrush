@@ -1,6 +1,13 @@
-﻿using SharpCrush.Results;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Schema;
+using SharpCrush4.Results;
 
-namespace SharpCrush
+namespace SharpCrush4
 {
     /// <summary>
     /// MediaCrush API Wrapper
@@ -53,6 +60,11 @@ namespace SharpCrush
         /// </summary>
         public const string UrlUploadApiUrl = "/api/upload/url";
 
+        /// <summary>
+        /// The base url of the mediacrush server. Because the media crush platform is opensource,
+        /// A different server/url can be used. It just needs to follow the same type of api.
+        /// </summary>
+        public static string BaseApiUrl = "https://mediacru.sh";
 
         #endregion
 
@@ -64,9 +76,13 @@ namespace SharpCrush
         /// <param name="hash">The hash of the file to get.</param>
         /// <returns>information about the file whose hash is specified</returns>
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash </remarks>
-        public static object GetFileInfo(string hash)
+        public static SharpCrushMediaFile GetFileInfo(string hash)
         {
-            return null;
+            string json = Get(BaseApiUrl + SingleFileApiUrl, hash);
+
+            SharpCrushMediaFile file = JsonConvert.DeserializeObject<SharpCrushMediaFile>(json);
+
+            return file;
         }
 
         /// <summary>
@@ -75,9 +91,13 @@ namespace SharpCrush
         /// <param name="hashes">the hashes of the files to get</param>
         /// <returns>information about the files whose hashes are specified.</returns>
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiinfolisthash </remarks>
-        public static object[] GetFileInfos(params string[] hashes)
+        public static Dictionary<string, SharpCrushMediaFile> GetFileInfos(params string[] hashes)
         {
-            return null;
+            string json = Get(BaseApiUrl + MultiFileApiUrl, string.Join(",", hashes));
+
+            Dictionary<string, SharpCrushMediaFile> files = JsonConvert.DeserializeObject<Dictionary<string, SharpCrushMediaFile>>(json);
+
+            return files;
         }
 
         /// <summary>
@@ -88,7 +108,11 @@ namespace SharpCrush
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihashexists </remarks>
         public static bool GetFileExists(string hash)
         {
-            return false;
+            string json = Get(BaseApiUrl + FileExistsApiUrl, hash);
+
+            bool exists = JsonConvert.DeserializeObject<dynamic>(json).exists;
+
+            return exists;
         }
 
         /// <summary>
@@ -99,6 +123,10 @@ namespace SharpCrush
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihashexists </remarks>
         public static DeleteFileResult DeleteFile(string hash)
         {
+            string json = Get(BaseApiUrl + FileDeleteApiUrl, hash);
+
+
+
             return DeleteFileResult.NotAllowed;
         }
 
@@ -110,6 +138,8 @@ namespace SharpCrush
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihashstatus </remarks>
         public static GetFileStatusResult GetFileStatus(string hash)
         {
+            string json = Get(BaseApiUrl + FileStatusApiUrl, hash);
+
             return GetFileStatusResult.Error;
         }
 
@@ -119,8 +149,25 @@ namespace SharpCrush
         /// <param name="file">The file to upload</param>
         /// <returns>Returns one <see cref="FileUploadResult"/></returns>
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadfile </remarks>
-        public static FileUploadResult UploadFile(object file)
+        public static FileUploadResult UploadFile(string file)
         {
+            byte[] bytes = File.ReadAllBytes(file);
+            string json = Post(BaseApiUrl + FileUploadApiUrl, bytes);
+
+
+            return FileUploadResult.FileRejected;
+        }
+
+        /// <summary>
+        /// Upload the specified file to the MediaCrush (or other) server.
+        /// </summary>
+        /// <param name="fileData">The file to upload</param>
+        /// <returns>Returns one <see cref="FileUploadResult"/></returns>
+        /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadfile </remarks>
+        public static FileUploadResult UploadFile(byte[] fileData)
+        {
+            string json = Post(BaseApiUrl + FileUploadApiUrl, fileData);
+
             return FileUploadResult.FileRejected;
         }
 
@@ -132,11 +179,79 @@ namespace SharpCrush
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadurl </remarks>
         public static UrlUploadResult UploadUrl(string url)
         {
+            byte[] bytes = Encoding.UTF8.GetBytes(url);
+            string json = Post(BaseApiUrl + UrlUploadApiUrl, bytes);
+
             return UrlUploadResult.FileRejected;
         }
 
         #endregion
 
+        #region Private Routines
+
+        private static string Get(string url, params object[] formatArgs)
+        {
+            url = string.Format(url, formatArgs);
+
+            var request = WebRequest.Create(url) as HttpWebRequest;
+
+            if(request == null) throw new ArgumentException("Specified url is not actually a url");
+
+            request.Method = "GET";
+
+            HttpWebResponse response;
+
+            try
+            {
+                response = request.GetResponse() as HttpWebResponse;
+            }
+            catch (WebException ex)
+            {
+                response = ex.Response as HttpWebResponse;
+            }
+
+            if (response == null) throw new IOException("No response from server");
+
+            StreamReader reader = new StreamReader(response.GetResponseStream());
+
+            return reader.ReadToEnd();
+        }
+
+        private static string Post(string url, byte[] data)
+        {
+            var request = WebRequest.Create(url) as HttpWebRequest;
+
+            if (request == null) throw new ArgumentException("Specified url is not actually a url");
+
+            request.Method = "POST";
+            request.KeepAlive = true;
+            request.ContentType = "image/jpeg";
+            request.ContentLength = data.Length;
+
+            var requestStream = request.GetRequestStream();
+
+            requestStream.Write(data, 0, data.Length);
+            requestStream.Close();
+            HttpWebResponse response;
+
+            try
+            {
+                response = request.GetResponse() as HttpWebResponse;
+            }
+            catch (WebException ex)
+            {
+                response = ex.Response as HttpWebResponse;
+            }
+
+
+            if (response == null) throw new IOException("No response from server");
+
+            StreamReader reader = new StreamReader(response.GetResponseStream());
+
+            return reader.ReadToEnd();
+        }
+
+        #endregion
 
     }
 

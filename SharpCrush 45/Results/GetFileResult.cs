@@ -1,4 +1,4 @@
-﻿namespace SharpCrush.Results
+﻿namespace SharpCrush45.Results
 {
     /// <summary>
     /// Status codes from the <see cref="SharpCrush.GetFileStatus(string)"/> routine.

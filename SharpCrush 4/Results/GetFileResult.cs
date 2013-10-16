@@ -1,4 +1,4 @@
-﻿namespace SharpCrush.Results
+﻿namespace SharpCrush4.Results
 {
     /// <summary>
     /// Status codes from the <see cref="SharpCrush.GetFileStatus(string)"/> routine.
@@ -10,7 +10,7 @@
         /// <summary>
         /// The file has been processed.
         /// </summary>
-        Done,
+        Done = 200,
 
         /// <summary>
         /// The file is being processed or in the processing queue.
@@ -33,6 +33,6 @@
         /// <summary>
         /// There is no file with that hash.
         /// </summary>
-        FileNotFound
+        FileNotFound = 404
     }
 }
