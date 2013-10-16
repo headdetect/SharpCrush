@@ -94,4 +94,4 @@ MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/mas
   
 ```
 
-
+_NOTE: These will probably change as I find myself hating my code more and more_
