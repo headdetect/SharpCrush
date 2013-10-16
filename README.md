@@ -30,7 +30,7 @@ or
 ```
 
 #### Checking for file existance
-MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash
+MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihashexists
 ```csharp
 
   var fileExists = SharpCrush.GetFileExists("tVWMM_ziA3nm");
@@ -43,7 +43,7 @@ MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/mas
 ```
 
 #### Deleting files
-MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash
+MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihashdelete
 ```csharp
 
   var deleteFileResult = SharpCrush.DeleteFile("tVWMM_ziA3nm");
@@ -56,7 +56,7 @@ MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/mas
 ```
 
 #### Retrieving file upload status
-MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash
+MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihashstatus
 ```csharp
 
   var fileStatusResult = SharpCrush.GetFileStatus("tVWMM_ziA3nm");
@@ -69,7 +69,7 @@ MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/mas
 ```
 
 #### Uploading files
-MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash
+MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadfile
 ```csharp
 
   var fileUploadResult = SharpCrush.UploadFile(fileToUploadGoesHere);
@@ -82,7 +82,7 @@ MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/mas
 ```
 
 #### Uploading URLs
-MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash
+MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadurl
 ```csharp
 
   var fileStatusResult = SharpCrush.UploadUrl("http://example.com/reallyslowimages/img.gif");
