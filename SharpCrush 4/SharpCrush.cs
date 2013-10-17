@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using SharpCrush4.Results;
 
@@ -151,24 +152,17 @@ namespace SharpCrush4
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadfile </remarks>
         public static FileUploadResult UploadFile(string file)
         {
-            byte[] bytes = File.ReadAllBytes(file);
-            string json = Post(BaseApiUrl + FileUploadApiUrl, bytes);
+            string json = Upload(BaseApiUrl + FileUploadApiUrl, file);
 
+            FileUploadResult result = JsonConvert.DeserializeObject<FileUploadResult>(json);
 
-            return FileUploadResult.FileRejected;
-        }
+            // Because the hash is the key of the SharpCrushMediaFile (I have no idea why), dynamic objects are needed //
+            var dynamicObject = JsonConvert.DeserializeObject<dynamic>(json);
+            var jObject = (JObject)dynamicObject[result.FileHash];
+            result.MediaFile = jObject.ToObject<SharpCrushMediaFile>();
+            result.MediaFile.StatusCode = (int)result.Result;
 
-        /// <summary>
-        /// Upload the specified file to the MediaCrush (or other) server.
-        /// </summary>
-        /// <param name="fileData">The file to upload</param>
-        /// <returns>Returns one <see cref="FileUploadResult"/></returns>
-        /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadfile </remarks>
-        public static FileUploadResult UploadFile(byte[] fileData)
-        {
-            string json = Post(BaseApiUrl + FileUploadApiUrl, fileData);
-
-            return FileUploadResult.FileRejected;
+            return result;
         }
 
         /// <summary>
@@ -179,8 +173,7 @@ namespace SharpCrush4
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadurl </remarks>
         public static UrlUploadResult UploadUrl(string url)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(url);
-            string json = Post(BaseApiUrl + UrlUploadApiUrl, bytes);
+            string json = Post(BaseApiUrl + UrlUploadApiUrl, "url=" + url);
 
             return UrlUploadResult.FileRejected;
         }
@@ -191,73 +184,56 @@ namespace SharpCrush4
 
         private static string Get(string url, params object[] formatArgs)
         {
-            url = string.Format(url, formatArgs);
-
-            var request = WebRequest.Create(url) as HttpWebRequest;
-
-            if(request == null) throw new ArgumentException("Specified url is not actually a url");
-
-            request.Method = "GET";
-
-            HttpWebResponse response;
-
-            try
+            using (var client = new WebClient())
             {
-                response = request.GetResponse() as HttpWebResponse;
+                try
+                {
+                    return client.DownloadString(string.Format(url, formatArgs));
+                }
+                catch (WebException ex)
+                {
+                    return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                }
             }
-            catch (WebException ex)
-            {
-                response = ex.Response as HttpWebResponse;
-            }
-
-            if (response == null) throw new IOException("No response from server");
-
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-
-            return reader.ReadToEnd();
         }
 
-        private static string Post(string url, byte[] data)
+        private static string Post(string url, string post)
         {
-            var request = WebRequest.Create(url) as HttpWebRequest;
-
-            if (request == null) throw new ArgumentException("Specified url is not actually a url");
-
-            request.Method = "POST";
-            request.KeepAlive = true;
-            request.ContentType = "image/jpeg";
-            request.ContentLength = data.Length;
-
-            var requestStream = request.GetRequestStream();
-
-            requestStream.Write(data, 0, data.Length);
-            requestStream.Close();
-            HttpWebResponse response;
-
-            try
+            using (var client = new WebClient())
             {
-                response = request.GetResponse() as HttpWebResponse;
+                try
+                {
+                    return client.UploadString(url, "POST", post);
+                }
+                catch (WebException ex)
+                {
+                    return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                }
             }
-            catch (WebException ex)
+        }
+
+        private static string Upload(string url, string filePath)
+        {
+            using (var client = new WebClient())
             {
-                response = ex.Response as HttpWebResponse;
+                try
+                {
+                    return Encoding.UTF8.GetString(client.UploadFile(url, filePath));
+                }
+                catch (WebException ex)
+                {
+                    return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                }
             }
-
-
-            if (response == null) throw new IOException("No response from server");
-
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-
-            return reader.ReadToEnd();
         }
 
         #endregion
 
     }
 
-   
 
-    
+
+
 
 
 

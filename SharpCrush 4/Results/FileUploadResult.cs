@@ -1,9 +1,10 @@
-﻿namespace SharpCrush4.Results
+﻿using Newtonsoft.Json;
+namespace SharpCrush4.Results
 {
     /// <summary>
     /// Result codes from the <see cref="SharpCrush.UploadFile(byte[])"/> routine.
     /// </summary>
-    public enum FileUploadResult
+    public enum FileUploadResults
     {
         /// <summary>
         /// The file was uploaded correctly.
@@ -25,5 +26,16 @@
         /// </summary>
         FileRejected = 415
 
+    }
+
+    public class FileUploadResult
+    {
+        [JsonProperty("error")]
+        public FileUploadResults Result { get; set; }
+
+        [JsonProperty("hash")]
+        public string FileHash { get; set; }
+
+        public SharpCrushMediaFile MediaFile { get; set; }
     }
 }

@@ -8,31 +8,31 @@
         /// <summary>
         /// The file was uploaded correctly.
         /// </summary>
-        Successful,
+        Successful = 200,
 
         /// <summary>
         /// The URL is invalid.
         /// </summary>
-        InvalidUrl,
+        InvalidUrl = 400,
 
         /// <summary>
         /// The requested file does not exist.
         /// </summary>
-        FileNotExist,
+        FileNotExist = 404,
 
         /// <summary>
         /// The file was already uploaded.
         /// </summary>
-        AlreadyUploaded,
+        AlreadyUploaded = 409,
 
         /// <summary>
         /// The file extension is not acceptable. File rejected.
         /// </summary>
-        FileRejected,
+        FileRejected = 415,
 
         /// <summary>
         /// The rate limit was exceeded. Simmer down with the uploads. k?
         /// </summary>
-        RateLimitExceeded
+        RateLimitExceeded = 420 // xXYoloSwag420Xx //
     }
 }

@@ -72,7 +72,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="TestFiles\test.jpeg">
+    <Content Include="TestFiles\jaypeg.jpeg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestFiles\jiffy.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

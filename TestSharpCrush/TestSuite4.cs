@@ -1,8 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Net.Mime;
-using System.Text;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpCrush4;
 
@@ -70,7 +66,13 @@ namespace TestMediaCrush
         [TestMethod]
         public void TestUploadFile()
         {
-            var result = SharpCrush.UploadFile("./TestFiles/test.jpeg");
+            var jaypegResult = SharpCrush.UploadFile("./TestFiles/jaypeg.jpeg");
+
+            Assert.IsTrue(jaypegResult.Result == SharpCrush4.Results.FileUploadResults.AlreadyUploaded || jaypegResult.Result == SharpCrush4.Results.FileUploadResults.Successful);
+
+            var jiffyResult = SharpCrush.UploadFile("./TestFiles/jiffy.gif");
+
+            Assert.IsTrue(jiffyResult.Result == SharpCrush4.Results.FileUploadResults.AlreadyUploaded || jiffyResult.Result == SharpCrush4.Results.FileUploadResults.Successful);
 
         }
 
