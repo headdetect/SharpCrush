@@ -22,17 +22,6 @@ namespace SharpCrush4
         public string FileType { get; internal set; }
 
 
-        internal SharpCrushFile(string filePath, string fileType)
-        {
-            FilePath = filePath;
-            FileType = fileType;
-        }
-
-        internal SharpCrushFile()
-        {
-        }
-
-
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;

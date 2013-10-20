@@ -25,7 +25,7 @@
         /// <summary>
         /// The file took too long to process.
         /// </summary>
-        TimeOut,
+        TimedOut,
 
 
         // -- 404 status results -- //

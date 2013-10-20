@@ -126,7 +126,21 @@ namespace SharpCrush4
         {
             string json = Get(BaseApiUrl + FileDeleteApiUrl, hash);
 
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
 
+            if (dictionary.ContainsKey("status"))
+            {
+                if (dictionary["status"].ToString().Equals("success", StringComparison.CurrentCultureIgnoreCase))
+                    return DeleteFileResult.Successful;
+            }
+
+            if (dictionary.ContainsKey("error"))
+            {
+                int result;
+                if(!int.TryParse(dictionary["error"].ToString(), out result))
+                    return DeleteFileResult.NotAllowed;
+                return (DeleteFileResult) result;
+            }
 
             return DeleteFileResult.NotAllowed;
         }
@@ -141,6 +155,28 @@ namespace SharpCrush4
         {
             string json = Get(BaseApiUrl + FileStatusApiUrl, hash);
 
+            var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+
+            if (dictionary.ContainsKey("status"))
+            {
+                if (dictionary["status"].ToString().Equals("done", StringComparison.CurrentCultureIgnoreCase))
+                    return GetFileStatusResult.Done;
+                if (dictionary["status"].ToString().Equals("processing", StringComparison.CurrentCultureIgnoreCase))
+                    return GetFileStatusResult.Processing;
+                if (dictionary["status"].ToString().Equals("error", StringComparison.CurrentCultureIgnoreCase))
+                    return GetFileStatusResult.Error;
+                if (dictionary["status"].ToString().Equals("timeout", StringComparison.CurrentCultureIgnoreCase))
+                    return GetFileStatusResult.TimedOut;
+            }
+
+            if (dictionary.ContainsKey("error"))
+            {
+                int result;
+                if (!int.TryParse(dictionary["error"].ToString(), out result))
+                    return GetFileStatusResult.FileNotFound;
+                return (GetFileStatusResult)result;
+            }
+
             return GetFileStatusResult.Error;
         }
 
@@ -152,15 +188,31 @@ namespace SharpCrush4
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadfile </remarks>
         public static FileUploadResult UploadFile(string file)
         {
+            if (!File.Exists(file)) throw new FileNotFoundException("Specified file doesn't exist", file);
+
             string json = Upload(BaseApiUrl + FileUploadApiUrl, file);
 
             FileUploadResult result = JsonConvert.DeserializeObject<FileUploadResult>(json);
 
             // Because the hash is the key of the SharpCrushMediaFile (I have no idea why), dynamic objects are needed //
             var dynamicObject = JsonConvert.DeserializeObject<dynamic>(json);
-            var jObject = (JObject)dynamicObject[result.FileHash];
-            result.MediaFile = jObject.ToObject<SharpCrushMediaFile>();
-            result.MediaFile.StatusCode = (int)result.Result;
+
+            // Sometimes it returns a somewhat malformed array. //
+            // https://github.com/MediaCrush/MediaCrush/issues/356 //
+            if (dynamicObject[result.FileHash] is JArray)
+            {
+                // We going to have to get media files a different way //
+                var mediaFile = GetFileInfo(result.FileHash);
+                result.MediaFile = mediaFile;
+            }
+
+            if (dynamicObject[result.FileHash] is JObject)
+            {
+
+                // This is the expected/faster way //
+                var jObject = (JObject)dynamicObject[result.FileHash];
+                result.MediaFile = jObject.ToObject<SharpCrushMediaFile>();
+            }
 
             return result;
         }
@@ -192,7 +244,9 @@ namespace SharpCrush4
                 }
                 catch (WebException ex)
                 {
-                    return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    if (ex.Response != null)
+                        return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    return string.Empty;
                 }
             }
         }
@@ -207,7 +261,9 @@ namespace SharpCrush4
                 }
                 catch (WebException ex)
                 {
-                    return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    if (ex.Response != null)
+                        return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    return string.Empty;
                 }
             }
         }
@@ -222,7 +278,9 @@ namespace SharpCrush4
                 }
                 catch (WebException ex)
                 {
-                    return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    if (ex.Response != null)
+                        return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    return string.Empty;
                 }
             }
         }
@@ -230,12 +288,4 @@ namespace SharpCrush4
         #endregion
 
     }
-
-
-
-
-
-
-
-
 }
