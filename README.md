@@ -1,7 +1,8 @@
 SharpCrush
 ==============
 
-A .NET Wrapper for the media crush API. https://mediacru.sh/docs/API
+A .NET Wrapper for the media crush API: https://mediacru.sh/docs/API  
+MediaCrush source repo is found [here](https://github.com/MediaCrush/MediaCrush)
 
 # Contributing
 
