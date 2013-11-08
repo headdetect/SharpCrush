@@ -137,9 +137,9 @@ namespace SharpCrush4
             if (dictionary.ContainsKey("error"))
             {
                 int result;
-                if(!int.TryParse(dictionary["error"].ToString(), out result))
+                if (!int.TryParse(dictionary["error"].ToString(), out result))
                     return DeleteFileResult.NotAllowed;
-                return (DeleteFileResult) result;
+                return (DeleteFileResult)result;
             }
 
             return DeleteFileResult.NotAllowed;
@@ -194,25 +194,13 @@ namespace SharpCrush4
 
             FileUploadResult result = JsonConvert.DeserializeObject<FileUploadResult>(json);
 
-            // Because the hash is the key of the SharpCrushMediaFile (I have no idea why), dynamic objects are needed //
             var dynamicObject = JsonConvert.DeserializeObject<dynamic>(json);
 
-            // Sometimes it returns a somewhat malformed array. //
-            // https://github.com/MediaCrush/MediaCrush/issues/356 //
-            if (dynamicObject[result.FileHash] is JArray)
-            {
-                // We going to have to get media files a different way //
-                var mediaFile = GetFileInfo(result.FileHash);
-                result.MediaFile = mediaFile;
-            }
+            result.Result = result.Result == 0 ? FileUploadResults.Successful : result.Result;
 
-            if (dynamicObject[result.FileHash] is JObject)
-            {
-
-                // This is the expected/faster way //
-                var jObject = (JObject)dynamicObject[result.FileHash];
-                result.MediaFile = jObject.ToObject<SharpCrushMediaFile>();
-            }
+            // Only get media file when success or already uploaded //
+            if (result.Result == FileUploadResults.Successful || result.Result == FileUploadResults.AlreadyUploaded)
+                result.MediaFile = GetFileInfo(result.FileHash);
 
             return result;
         }
@@ -225,9 +213,19 @@ namespace SharpCrush4
         /// <remarks>API Doc Url: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apiuploadurl </remarks>
         public static UrlUploadResult UploadUrl(string url)
         {
-            string json = Post(BaseApiUrl + UrlUploadApiUrl, "url=" + url);
+            string json = PostValues(BaseApiUrl + UrlUploadApiUrl, new Dictionary<string, string> { { "url", url } });
 
-            return UrlUploadResult.FileRejected;
+            UrlUploadResult result = JsonConvert.DeserializeObject<UrlUploadResult>(json);
+
+            var dynamicObject = JsonConvert.DeserializeObject<dynamic>(json);
+
+            result.Result = result.Result == 0 ? UrlUploadResults.Successful : result.Result;
+
+            // Only get media file when success or already uploaded //
+            if (result.Result == UrlUploadResults.Successful || result.Result == UrlUploadResults.AlreadyUploaded)
+                result.MediaFile = GetFileInfo(result.FileHash);
+
+            return result;
         }
 
         #endregion
@@ -258,6 +256,28 @@ namespace SharpCrush4
                 try
                 {
                     return client.UploadString(url, "POST", post);
+                }
+                catch (WebException ex)
+                {
+                    if (ex.Response != null)
+                        return new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    return string.Empty;
+                }
+            }
+        }
+
+        private static string PostValues(string url, Dictionary<string, string> post)
+        {
+            var collection = new System.Collections.Specialized.NameValueCollection();
+            foreach (var item in post)
+            {
+                collection.Add(item.Key, item.Value);
+            }
+            using (var client = new WebClient())
+            {
+                try
+                {
+                    return Encoding.UTF8.GetString(client.UploadValues(url, "POST", collection));
                 }
                 catch (WebException ex)
                 {
