@@ -8,6 +8,20 @@ MediaCrush source repo is found at https://github.com/MediaCrush/MediaCrush
 # Example Usage
 
 
+### Index
+
+#### Properties
+  * [GetFileInfo](#retrieving-file-info)
+  * [GetFileInfos](#retrieving-info-about-multiple-files)
+  * [GetFileExists](#checking-for-file-existance)
+  * [GetFileStatus](#retrieving-file-upload-status)  
+  
+#### Functions
+  * [UploadFile](#uploading-files)
+  * [UploadUrl](#uploading-urls)
+  * [DeleteFile](#deleting-files)
+
+
 ### Retrieving file info
 MediaCrush API Implementation: https://github.com/MediaCrush/MediaCrush/blob/master/docs/api.md#apihash
 ```csharp
