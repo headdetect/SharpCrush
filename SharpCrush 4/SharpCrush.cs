@@ -72,7 +72,7 @@ namespace SharpCrush4
         #region Public Routines
 
         /// <summary>
-        /// Gets information about the file whose hash is specified.
+        /// Gets information about the file from the specified hash.
         /// </summary>
         /// <param name="hash">The hash of the file to get.</param>
         /// <returns>information about the file whose hash is specified</returns>
