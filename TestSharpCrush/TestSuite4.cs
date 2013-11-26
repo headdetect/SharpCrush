@@ -2,6 +2,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharpCrush4;
 using SharpCrush4.Results;
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Threading;
 
 namespace TestMediaCrush
 {
@@ -55,7 +59,7 @@ namespace TestMediaCrush
         public void TestDeleteFile()
         {
             // Upload so we have something to delete //
-            var jiffyResult = SharpCrush.UploadFile("./TestFiles/jiffy.gif");
+            var jiffyResult = SharpCrush.UploadFile(getATempImageSoWeCanGetAWorkAroundForIssue365FoundOnGitHubDotComJpg("./TestFiles/jaypeg.jpg"));
             Assert.IsTrue(jiffyResult.Result == FileUploadResults.AlreadyUploaded || jiffyResult.Result == FileUploadResults.Successful);
 
 
@@ -63,8 +67,7 @@ namespace TestMediaCrush
 
             var shouldDelete = SharpCrush.DeleteFile(jiffyResult.FileHash);
 
-            // Deletion is broken: https://github.com/MediaCrush/MediaCrush/issues/356 //
-            //TODO: Assert.IsTrue(shouldDelete == DeleteFileResult.Successful);
+            Assert.IsTrue(shouldDelete == DeleteFileResult.Successful);
 
 
 
@@ -87,30 +90,42 @@ namespace TestMediaCrush
         [TestMethod]
         public void TestGetFileStatus()
         {
-            var jaypeg = SharpCrush.UploadFile("./TestFiles/jaypeg.jpg");
+            var jaypeg = SharpCrush.UploadFile(getATempImageSoWeCanGetAWorkAroundForIssue365FoundOnGitHubDotComJpg("./TestFiles/jaypeg.jpg"));
+
+            // Let the server do its thing... //
+            Thread.Sleep(2000);
 
             var stat1 = jaypeg.Status;
+            if (stat1 == GetFileStatusResult.Done || stat1 == GetFileStatusResult.Processing)
+            {
+                // We all good //
+                return;
+            }
 
-            // OR 
 
-            var stat2 = SharpCrush.GetFileStatus(jaypeg.FileHash);
+            // Let the server do its thing... //
+            Thread.Sleep(2000);
 
-            // The only way this would fail, is if they status changed with in the execution of stat1 and stat2. So about ~ 5ms //
-            Assert.IsTrue(stat1 == stat2);
+            // Try one more time //
+            stat1 = jaypeg.Status;
+            if (stat1 == GetFileStatusResult.Done || stat1 == GetFileStatusResult.Processing)
+            {
+                // We all good //
+                return;
+            }
 
-            // Will fail. See: https://github.com/MediaCrush/MediaCrush/issues/356 //
-            Assert.IsTrue(stat1 == GetFileStatusResult.Done || stat1 == GetFileStatusResult.Processing);
+            Assert.Fail();
 
         }
 
         [TestMethod]
         public void TestUploadFile()
         {
-            var jaypegResult = SharpCrush.UploadFile("./TestFiles/jaypeg.jpg");
+            var jaypegResult = SharpCrush.UploadFile(getATempImageSoWeCanGetAWorkAroundForIssue365FoundOnGitHubDotComJpg("./TestFiles/jaypeg.jpg"));
 
             Assert.IsTrue(jaypegResult.Result == FileUploadResults.AlreadyUploaded || jaypegResult.Result == FileUploadResults.Successful);
 
-            var jiffyResult = SharpCrush.UploadFile("./TestFiles/jiffy.gif");
+            var jiffyResult = SharpCrush.UploadFile(getATempImageSoWeCanGetAWorkAroundForIssue365FoundOnGitHubDotComGif("./TestFiles/jiffy.gif"));
 
             Assert.IsTrue(jiffyResult.Result == FileUploadResults.AlreadyUploaded || jiffyResult.Result == FileUploadResults.Successful);
 
@@ -119,7 +134,53 @@ namespace TestMediaCrush
         [TestMethod]
         public void TestUploadFileUrl()
         {
+            // Just for the sake of the test //
+            int random = new Random().Next(100000000, 999999999);
 
+            var randomResult = SharpCrush.UploadUrl("http://randomimage.setgetgo.com/get.php?key=" + random + "&height=50&width=50&type=png");
+
+            Assert.IsTrue(randomResult.Result == UrlUploadResults.Successful);
+
+            if (randomResult.Result == UrlUploadResults.AlreadyUploaded)
+            {
+                Assert.Inconclusive("Url key \"" + random + "\" was already uploaded...?");
+            }
+        }
+
+        /// <summary>
+        /// You're probably wondering. Wut da heil. Well, you see, https://github.com/MediaCrush/MediaCrush/issues/356 is kind of blocking some progress. 
+        /// Code blocking, if you will. This is the best way I could get around it.
+        /// </summary>
+        private string getATempImageSoWeCanGetAWorkAroundForIssue365FoundOnGitHubDotComJpg(string src)
+        {
+            string newName = src.Replace(Path.GetFileName(src), DateTime.Now.ToString("yymmddMMss") + "." + Path.GetFileName(src));
+
+            Bitmap map = new Bitmap(100, 50);
+            using (var graphics = Graphics.FromImage(map))
+            {
+                graphics.DrawString(DateTime.Now.ToString("yymmddMMss"), SystemFonts.MenuFont, Brushes.Red, new PointF());
+            }
+            map.Save(newName);
+
+            return newName;
+        }
+
+        /// <summary>
+        /// You're probably wondering. Wut da heil. Well, you see, https://github.com/MediaCrush/MediaCrush/issues/356 is kind of blocking some progress. 
+        /// Code blocking, if you will. This is the best way I could get around it.
+        /// </summary>
+        private string getATempImageSoWeCanGetAWorkAroundForIssue365FoundOnGitHubDotComGif(string src)
+        {
+            string newName = src.Replace(Path.GetFileName(src), DateTime.Now.ToString("yymmddMMss") + "." + Path.GetFileName(src));
+            Image gifImg = Image.FromFile(src);
+
+            using (var graphics = Graphics.FromImage(gifImg))
+            {
+                graphics.DrawString(DateTime.Now.ToString("yymmddMMss"), SystemFonts.MenuFont, Brushes.Red, new PointF());
+            }
+
+            gifImg.Save(newName);
+            return newName;
         }
     }
 }
